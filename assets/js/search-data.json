@@ -29,7 +29,7 @@
   
       ,"page1": {
           "title": "About Me",
-          "content": "This website is powered by fastpages 1. . a blogging platform that natively supports Jupyter notebooks in addition to other formats. &#8617; . |",
+          "content": "",
           "url": "https://igrek-code.github.io/Yet-another-blog/about/",
           "relUrl": "/about/",
           "date": ""
@@ -48,8 +48,6 @@
   
 
   
-
-  
   
 
   
@@ -59,7 +57,7 @@
   
 
   
-      ,"page10": {
+      ,"page9": {
           "title": "",
           "content": "Sitemap: {{ “sitemap.xml” | absolute_url }} | .",
           "url": "https://igrek-code.github.io/Yet-another-blog/robots.txt",
