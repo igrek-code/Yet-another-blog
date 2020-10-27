@@ -1,1 +1,1 @@
-Sitemap: https://igrek-code.github.io/Yet-another-blog/sitemap.xml
+Sitemap: https://igrek-code.github.io/sitemap.xml
