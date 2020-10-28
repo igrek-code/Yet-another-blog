@@ -1,9 +1,8 @@
-# Drivetrain approach with example (minimizing spread of COVID-19 across students of a department)
-
-Table of contents:
-
-1. TOC
-{:toc}
+---
+title: "Drivetrain approach with example (Designing better data products)"
+layout: post
+toc: true
+---
 
 ## What is the Drivetrain approach ?
 
