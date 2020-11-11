@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Cyclical Learning Rates | Yet another blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Cyclical Learning Rates" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Graduate student in computer science, blog about my learning journey (AI/ Deep learning/ Machine learning/ Computer vision)." />
+<meta property="og:description" content="Graduate student in computer science, blog about my learning journey (AI/ Deep learning/ Machine learning/ Computer vision)." />
+<link rel="canonical" href="https://igrek-code.github.io/blog/2020/11/11/cyclical-learning-rates.html" />
+<meta property="og:url" content="https://igrek-code.github.io/blog/2020/11/11/cyclical-learning-rates.html" />
+<meta property="og:site_name" content="Yet another blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-11-11T00:00:00-06:00" />
+<script type="application/ld+json">
+{"url":"https://igrek-code.github.io/blog/2020/11/11/cyclical-learning-rates.html","@type":"BlogPosting","headline":"Cyclical Learning Rates","dateModified":"2020-11-11T00:00:00-06:00","datePublished":"2020-11-11T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://igrek-code.github.io/blog/2020/11/11/cyclical-learning-rates.html"},"description":"Graduate student in computer science, blog about my learning journey (AI/ Deep learning/ Machine learning/ Computer vision).","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://igrek-code.github.io/blog/feed.xml" title="Yet another blog" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Yet another blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/about/">About Me</a><a class="page-link" href="/blog/search/">Search</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Cyclical Learning Rates</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-11-11T00:00:00-06:00" itemprop="datePublished">
+        Nov 11, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      5 min read
+    
+</span></p>
+
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-wrap flex-justify-end">
+          <div class="px-2">
+
+    <a href="https://github.com/igrek-code/blog/tree/master/_notebooks/2020-11-11-cyclical-learning-rates.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/blog/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/igrek-code/blog/blob/master/_notebooks/2020-11-11-cyclical-learning-rates.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/blog/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h2"><a href="#What-is-it-?">What is it ? </a></li>
+<li class="toc-entry toc-h2"><a href="#Why-does-it-work-?">Why does it work ? </a></li>
+<li class="toc-entry toc-h2"><a href="#Definitions">Definitions </a></li>
+<li class="toc-entry toc-h2"><a href="#Implemetation">Implemetation </a></li>
+<li class="toc-entry toc-h2"><a href="#Choose-the-boundaries">Choose the boundaries </a></li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2020-11-11-cyclical-learning-rates.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="What-is-it-?">
+<a class="anchor" href="#What-is-it-?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is it ?<a class="anchor-link" href="#What-is-it-?"> </a>
+</h2>
+<p>It's a technique introduced in this paper: <a href="https://arxiv.org/pdf/1506.01186">Cyclical Learning Rates for Training Neural Networks</a>, written by Smith, Leslie N.</p>
+<p>That suggests that rather then training a neural network with a fixed learning rate. It is more benefical to train it with a learning rate that cyclically vary between reasonable boundary values (even thought it may harm it during parts of the training, but overall it is more benfical).</p>
+<blockquote>
+<p>From now on we will call the cyclical learning rate policy as <strong>CLR</strong>.</p>
+</blockquote>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Why-does-it-work-?">
+<a class="anchor" href="#Why-does-it-work-?" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why does it work ?<a class="anchor-link" href="#Why-does-it-work-?"> </a>
+</h2>
+<p>An intuitive understading of why <strong>CLR</strong> works is that when you consider your loss function, sometimes it will have plateaus when the gradient is really small, and that will slow the training process. So by variying the learning rate, you will pass those plateaus more rapidly (when the learning rate gets to the higher values).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Definitions">
+<a class="anchor" href="#Definitions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Definitions<a class="anchor-link" href="#Definitions"> </a>
+</h2>
+<p>The policy is desribed by the following image.</p>
+<p><img src="/blog/images/copied_from_nb/../images/triang_policy.PNG" alt="Triangular learning rate policy, image from the paper"></p>
+<p>We have four main things:</p>
+<ul>
+<li>Maximum bound (max_lr), the highest learning rate value. </li>
+<li>Minimum bound (base_lr), the lowest learning rate value.</li>
+<li>Step size, the number of iterations that are needed to go from <em>base_lr</em> linearly to <em>max_lr</em>.</li>
+<li>Cycle is just 2 x Step, going from <em>min_lr</em> to <em>max_lr</em> then going back to <em>min_lr</em>.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Implemetation">
+<a class="anchor" href="#Implemetation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Implemetation<a class="anchor-link" href="#Implemetation"> </a>
+</h2>
+<p>CLR comes in 3 variations, as described in the paper, however in this post we will implement one of them which is called <strong>triangular</strong> (the idea stays the same for the other two, but with somme subtleties).</p>
+<p>We will implement it by training a simple <em>Neural Network</em> using the famous <em>MNIST</em> dataset.</p>
+<p>As mentioned by the author, the accuracy results are quite robust to cycle lengths. So in our case we will just use step size = 2 * number of iterations per epoch.</p>
+<p>Now the number of iterations per epoch is just :</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">number_iterations_per_epoch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">total_num_of_items</span> <span class="o">/</span> <span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'int'</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">number_iterations_per_epoch</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>938</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">step_size</span> <span class="o">=</span> <span class="n">number_iterations_per_epoch</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="n">step_size</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>1876</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We'll set the requirements for training (i.e. a loss, the model, and gradient step)</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">one_iteration</span><span class="p">():</span>
+  <span class="c1"># set the optimizer that will do the gradient step for us</span>
+  <span class="n">opt</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="n">simple_net_CLR</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">current_lr</span><span class="p">)</span>
+
+  <span class="c1"># Get the activations</span>
+  <span class="n">preds</span> <span class="o">=</span> <span class="n">simple_net_CLR</span><span class="p">(</span><span class="n">xb</span><span class="p">)</span>
+
+  <span class="c1"># Calculate the loss</span>
+  <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">yb</span><span class="p">)</span>
+
+  <span class="c1"># Calculate the gradient</span>
+  <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+
+  <span class="c1"># Do the step and set the gradient to zero</span>
+  <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+  <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Choose-the-boundaries">
+<a class="anchor" href="#Choose-the-boundaries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Choose the boundaries<a class="anchor-link" href="#Choose-the-boundaries"> </a>
+</h2>
+<p>Now something that is really interesting in the paper, is that the author gives us a quite efficient ways of choosing our <em>base_lr</em> and <em>max_lr</em>. Which he calls <strong>“LR range test”</strong>.</p>
+<p>The idea is to train our model for a few epochs while increasing the learning rate linearly from a small value to a big value.</p>
+<p>Then plot the accuracy according to the learning rate.</p>
+<p>Note the learning rate when the accuracy starts improving, and when the accuracy slows, becomes ragged or starts to fall. And set the first as your <em>base_lr</em> and the latter as your <em>max_lr</em>.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">simple_net_CLR</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">start_lr</span> <span class="o">=</span> <span class="mf">0.0001</span>
+<span class="n">final_lr</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># Create a numpy array with 314 values evenly spaced out from start_lr to final_lr</span>
+<span class="n">lr_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start_lr</span><span class="p">,</span> <span class="n">final_lr</span><span class="p">,</span> <span class="mi">314</span><span class="p">)</span>
+
+<span class="c1"># Get our batches of items</span>
+<span class="n">batches</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dl</span><span class="p">)</span>
+
+<span class="c1"># List where we will store the accuracy after each batch</span>
+<span class="n">batch_acc_v</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># 314 is just an arbitrary number you can choose whatever works for you</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">314</span><span class="p">):</span>
+
+  <span class="c1"># Get the batch</span>
+  <span class="n">xb</span><span class="p">,</span> <span class="n">yb</span> <span class="o">=</span> <span class="n">batches</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+  <span class="c1"># Set the learning rate</span>
+  <span class="n">current_lr</span> <span class="o">=</span> <span class="n">lr_range</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+  <span class="c1"># Do the iteration with the given learning rate</span>
+  <span class="n">one_iteration</span><span class="p">()</span>
+
+  <span class="c1"># Calculate the accuracy and save it in the previously created list</span>
+  <span class="n">ba</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">([</span><span class="n">accuracy</span><span class="p">(</span><span class="n">simple_net_CLR</span><span class="p">(</span><span class="n">xb</span><span class="p">),</span> <span class="n">yb</span><span class="p">)</span> <span class="k">for</span> <span class="n">xb</span><span class="p">,</span> <span class="n">yb</span> <span class="ow">in</span> <span class="n">dl_valid</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+  <span class="n">batch_acc_v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ba</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lr_range</span><span class="p">,</span> <span class="n">batch_acc_v</span><span class="p">);</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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%0A">
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>From the graph, we can reasonably choose base_lr = 0.175, max_lr = 0.25</p>
+<p>But before we train our model with <strong>CLR</strong>, we'll train another model with a fixed learning rate so we have a baseline to compare to. We'll set the learning rate to 0.2 as it looks like a reasonable choice.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">base_line_net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">lr</span> <span class="o">=</span> <span class="mf">0.2</span>
+
+<span class="c1"># List to store the accuracy after each epoch</span>
+<span class="n">batch_acc_v</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Training for 30 epochs</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">30</span><span class="p">):</span>
+  <span class="k">for</span> <span class="n">xb</span><span class="p">,</span> <span class="n">yb</span> <span class="ow">in</span> <span class="n">dl</span><span class="p">:</span>
+
+    <span class="c1"># do one gradient step </span>
+    <span class="n">one_iteration_base</span><span class="p">()</span>
+  
+  <span class="c1"># Calculate accuracy after each epoch</span>
+  <span class="n">ba</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">([</span><span class="n">accuracy</span><span class="p">(</span><span class="n">base_line_net</span><span class="p">(</span><span class="n">xb</span><span class="p">),</span> <span class="n">yb</span><span class="p">)</span> <span class="k">for</span> <span class="n">xb</span><span class="p">,</span> <span class="n">yb</span> <span class="ow">in</span> <span class="n">dl_valid</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+  <span class="n">batch_acc_v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ba</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">'Best accuracy: '</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">batch_acc_v</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Best accuracy:  0.9675557613372803
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now that we have everything we need, let's train the model and see the results.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">base_lr</span> <span class="o">=</span> <span class="mf">0.175</span>
+<span class="n">max_lr</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="n">current_lr</span> <span class="o">=</span> <span class="n">base_lr</span>
+
+<span class="c1"># Set the values of the learning rates for each part of the cycle</span>
+<span class="n">values_of_lr_as</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">base_lr</span><span class="p">,</span> <span class="n">max_lr</span><span class="p">,</span> <span class="n">step_size</span><span class="p">)</span>
+<span class="n">values_of_lr_ds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">max_lr</span><span class="p">,</span> <span class="n">base_lr</span><span class="p">,</span> <span class="n">step_size</span><span class="p">)</span>
+
+<span class="c1"># To know if we are in the first part of the cycle or the second (ascending / descending)</span>
+<span class="n">smaller_values</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># when iter == stepsize we will change from ascending to descending ad vice versa</span>
+<span class="nb">iter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">epochs</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">batch_acc_v</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+  
+  <span class="k">for</span> <span class="n">xb</span><span class="p">,</span> <span class="n">yb</span> <span class="ow">in</span>  <span class="n">dl</span><span class="p">:</span>
+    <span class="c1"># one iteration</span>
+
+    <span class="c1"># take gradient step</span>
+    <span class="n">one_iteration</span><span class="p">()</span>
+
+    <span class="c1"># increment bacause we did one iteration</span>
+    <span class="nb">iter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># if yes change from descending to ascending and vice versa</span>
+    <span class="k">if</span> <span class="nb">iter</span> <span class="o">==</span> <span class="n">step_size</span> <span class="p">:</span>
+      <span class="k">if</span> <span class="n">smaller_values</span><span class="p">:</span> 
+        <span class="n">smaller_values</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">iter</span> <span class="o">=</span> <span class="mi">1</span>
+      <span class="k">else</span><span class="p">:</span> 
+        <span class="n">smaller_values</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="nb">iter</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">smaller_values</span><span class="p">:</span>
+      <span class="n">current_lr</span> <span class="o">=</span> <span class="n">values_of_lr_as</span><span class="p">[</span><span class="nb">iter</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">current_lr</span> <span class="o">=</span> <span class="n">values_of_lr_ds</span><span class="p">[</span><span class="nb">iter</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+  <span class="c1"># Calculate the accuracy after each epoch</span>
+  <span class="n">ba</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">([</span><span class="n">accuracy</span><span class="p">(</span><span class="n">simple_net_CLR</span><span class="p">(</span><span class="n">xb</span><span class="p">),</span> <span class="n">yb</span><span class="p">)</span> <span class="k">for</span> <span class="n">xb</span><span class="p">,</span> <span class="n">yb</span> <span class="ow">in</span> <span class="n">dl_valid</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+  <span class="n">batch_acc_v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ba</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">'Best accuracy: '</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">batch_acc_v</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Best accuracy:  0.9710389971733093
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The <strong>CLR</strong> is a clear winner, as it achieved 97.10 % accuracy as opposed to 96.75 % for the fixed learning rate policy.</p>
+<blockquote>
+<p>The author also suggests to stop the training at the end of the cycle as it is the moment where the learning rate gets to the lower values.</p>
+</blockquote>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><a class="u-url" href="/blog/2020/11/11/cyclical-learning-rates.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Graduate student in computer science, blog about my learning journey (AI/ Deep learning/ Machine learning/ Computer vision).</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/igrek-code" title="igrek-code"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
