@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Mixup, Manifold Mixup and CutMix | Yet another blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Mixup, Manifold Mixup and CutMix" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Graduate student in computer science, blog about my learning journey (AI/ Deep learning/ Machine learning/ Computer vision)." />
+<meta property="og:description" content="Graduate student in computer science, blog about my learning journey (AI/ Deep learning/ Machine learning/ Computer vision)." />
+<link rel="canonical" href="https://igrek-code.github.io/blog/2020/11/18/mixup_manifold_mixup_cutmix.html" />
+<meta property="og:url" content="https://igrek-code.github.io/blog/2020/11/18/mixup_manifold_mixup_cutmix.html" />
+<meta property="og:site_name" content="Yet another blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-11-18T00:00:00-06:00" />
+<script type="application/ld+json">
+{"url":"https://igrek-code.github.io/blog/2020/11/18/mixup_manifold_mixup_cutmix.html","@type":"BlogPosting","headline":"Mixup, Manifold Mixup and CutMix","dateModified":"2020-11-18T00:00:00-06:00","datePublished":"2020-11-18T00:00:00-06:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://igrek-code.github.io/blog/2020/11/18/mixup_manifold_mixup_cutmix.html"},"description":"Graduate student in computer science, blog about my learning journey (AI/ Deep learning/ Machine learning/ Computer vision).","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://igrek-code.github.io/blog/feed.xml" title="Yet another blog" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Yet another blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/about/">About Me</a><a class="page-link" href="/blog/search/">Search</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Mixup, Manifold Mixup and CutMix</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-11-18T00:00:00-06:00" itemprop="datePublished">
+        Nov 18, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      6 min read
+    
+</span></p>
+
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-wrap flex-justify-end">
+          <div class="px-2">
+
+    <a href="https://github.com/igrek-code/blog/tree/master/_notebooks/2020-11-18-mixup_manifold_mixup_cutmix.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/blog/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/igrek-code/blog/blob/master/_notebooks/2020-11-18-mixup_manifold_mixup_cutmix.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/blog/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h2"><a href="#What-will-we-do-?">What will we do ? </a></li>
+<li class="toc-entry toc-h2"><a href="#Data-augmentation">Data augmentation </a></li>
+<li class="toc-entry toc-h2"><a href="#1.-Mixup">1. Mixup </a></li>
+<li class="toc-entry toc-h2"><a href="#2.-Manifold-mixup">2. Manifold mixup </a></li>
+<li class="toc-entry toc-h2"><a href="#3.-Cutmix">3. Cutmix </a></li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2020-11-18-mixup_manifold_mixup_cutmix.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="What-will-we-do-?">
+<a class="anchor" href="#What-will-we-do-?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What will we do ?<a class="anchor-link" href="#What-will-we-do-?"> </a>
+</h2>
+<p>In this post, we will see three data augmentation techniques: MixUp, Manifold MixUp and Cutmix. And how to implement them in fastai2.</p>
+<blockquote>
+<p>To implement them in fastai2, we'll use callbacks.</p>
+<p>Callbacks are what is used inside fastai to inject custom behavior in the training loop (we use 'cbs=' argument inside the Learner).</p>
+<p>Note that these techniques require far more epochs to train.</p>
+</blockquote>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Data-augmentation">
+<a class="anchor" href="#Data-augmentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data augmentation<a class="anchor-link" href="#Data-augmentation"> </a>
+</h2>
+<p>Data augmentation is a technique used to enrich your dataset, by creating synthetic data generated from your original data.</p>
+<p>This is used as a regularization technique, in other means your model will generalize better to new data that he has not seen before.</p>
+<p>DNN have a problem, they predict overconfidently stuff, so with regularization we have better genralization and smoother decision boundary (transition from one class to the other).</p>
+<p>The three techniques that we'll see provide an additional benefit that is your model will get more robust to corrupted labels and adverserial attacks.</p>
+<blockquote>
+<p>Adverserial attacks are noise added to your input, inperceptible by the human eye but will confuse your model to producing totally different predictions from the ground truth labels.</p>
+</blockquote>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="1.-Mixup">
+<a class="anchor" href="#1.-Mixup" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. Mixup<a class="anchor-link" href="#1.-Mixup"> </a>
+</h2>
+<p>The idea is pretty basic :</p>
+<ol>
+<li>Select two samples (images in our case) at random from the dataset.</li>
+<li>Select a weight at random (from the Beta distribution where alpha is a hyperparameter, i.e. λ ∼ Beta(α, α)).</li>
+<li>Take a weighted average of the two samples previously chosen using that weight, this is your independent variable.</li>
+<li>Take a weighted average of the targets of your corresponding images, with the same weight this will be your dependant variable.</li>
+</ol>
+<p>Then you continue the usual procedure for training your DNN.</p>
+<blockquote>
+<p>Your targets must be one-hot-encoded.</p>
+<p>The related paper:<a href="https://arxiv.org/abs/1710.09412">mixup: Beyond Empirical Risk Minimization</a></p>
+</blockquote>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here's the code implementation of it as described in the paper.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Take two samples at a time</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">loader1</span><span class="p">,</span> <span class="n">loader2</span><span class="p">):</span>
+
+  <span class="c1"># Select a random weight</span>
+  <span class="n">lam</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+
+  <span class="c1"># Take the weighted average of the two samples, to obtain your independent variable</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">lam</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span> <span class="o">*</span> <span class="n">x2</span><span class="p">)</span>
+
+  <span class="c1"># Take the weighted average of the targets, to obtain your dependent variable</span>
+  <span class="n">y</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">lam</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span> <span class="o">*</span> <span class="n">y2</span><span class="p">)</span>
+
+  <span class="c1"># Continue training as usual</span>
+  <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+  <span class="n">loss</span><span class="p">(</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+  <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>MixUp is already available as a Callback in fastai2.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create model</span>
+<span class="n">learn_with_mixup</span> <span class="o">=</span> <span class="n">Learner</span><span class="p">(</span><span class="n">dls</span><span class="p">,</span> <span class="n">resnet18</span><span class="p">(),</span> <span class="n">metrics</span><span class="o">=</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">cbs</span> <span class="o">=</span> <span class="n">MixUp</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
+<span class="c1"># Train model</span>
+<span class="n">learn_with_mixup</span><span class="o">.</span><span class="n">fit_one_cycle</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now let's see the remaining two techniques, which are just variants of this one.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="2.-Manifold-mixup">
+<a class="anchor" href="#2.-Manifold-mixup" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. Manifold mixup<a class="anchor-link" href="#2.-Manifold-mixup"> </a>
+</h2>
+<p>It's the same idea as MixUp but instead of just applying it for the input (i.e. before the first layer), we can apply this <em>mixing</em> before another layer of the model.</p>
+<p>So the procedure goes, as described in the paper :</p>
+<ol>
+<li>we select a random layer k from a set of eligible layers S in the
+neural network. This set may include the input layer. </li>
+<li>we process two random data minibatches (x1, y1) and (x2, y2) as usual, until reaching layer k. This provides us with two intermediate minibatches (result_1, y1) and (result_2, y2). </li>
+<li>we perform MixUp on these intermediate minibatches. This produces the mixed minibatch (mixed_result, mixed_y).</li>
+<li>we continue the forward pass in the network from layer k until the
+output using the mixed minibatchs. </li>
+<li>this output is used to compute the loss value and
+gradients that update all the parameters of the neural network.<blockquote>
+<p>The related paper:<a href="https://arxiv.org/abs/1806.05236">Manifold Mixup: Better Representations by Interpolating Hidden States</a></p>
+</blockquote>
+</li>
+</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here's a pseudo-code to understand the implementation.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Creating a simple network </span>
+<span class="n">first_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">second_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Relu</span><span class="p">()</span>
+<span class="n">third_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Pick eligible layers before training</span>
+<span class="n">eligible</span> <span class="o">=</span> <span class="n">first_layer</span><span class="p">,</span> <span class="n">third_layer</span>
+
+<span class="c1"># Take two samples at a time</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">loader1</span><span class="p">,</span> <span class="n">loader2</span><span class="p">):</span>
+
+<span class="c1"># Choose a layer at random (in the paper it was from a uniform distribution)</span>
+  <span class="n">chosen</span> <span class="o">=</span> <span class="n">choose_random</span><span class="p">(</span><span class="n">eligile</span><span class="p">)</span> 
+
+<span class="c1"># Let's say chosen == third_layer</span>
+
+<span class="c1"># Forward pass through first and second layer</span>
+  <span class="n">result_xb1</span> <span class="o">=</span> <span class="n">second_layer</span><span class="p">(</span><span class="n">first_layer</span><span class="p">(</span><span class="n">xb1</span><span class="p">))</span>
+  <span class="n">result_xb2</span> <span class="o">=</span> <span class="n">second_layer</span><span class="p">(</span><span class="n">first_layer</span><span class="p">(</span><span class="n">xb2</span><span class="p">))</span>
+
+<span class="c1"># Select a random weight</span>
+  <span class="n">lam</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+
+<span class="c1"># Take the weighted average of the two intermediate results</span>
+  <span class="n">new_result</span> <span class="o">=</span> <span class="n">result_xb1</span> <span class="o">*</span> <span class="n">lam</span> <span class="o">+</span> <span class="n">result_xb2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span>
+
+<span class="c1"># Take the weighted average of the targets, to obtain your dependent variable</span>
+  <span class="n">y</span> <span class="o">=</span> <span class="n">yb1</span> <span class="o">*</span> <span class="n">lam</span> <span class="o">+</span> <span class="n">yb2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span>
+
+<span class="c1"># Continue forward pass with the new_result</span>
+  <span class="n">pred</span> <span class="o">=</span> <span class="n">third_layer</span><span class="p">(</span><span class="n">new_result</span><span class="p">)</span>
+
+<span class="c1"># Continue training as usual</span>
+  <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+  <span class="n">loss</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+  <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now this one is not availble in fastai2, but no worries there is a module created by a guy called Nestor Demeure from the fastai community who implemented the manifold mixup as a Callback for us to use in fastai2.</p>
+<p>Github repo of the module : <a href="https://github.com/nestordemeure/ManifoldMixupV2">ManifoldMixupV2</a></p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Clone the repo</span>
+<span class="o">!</span>git clone https://github.com/nestordemeure/ManifoldMixupV2.git
+<span class="c1"># Copy the module in the current directory</span>
+<span class="o">!</span>cp /content/ManifoldMixupV2/manifold_mixup.py /content/
+<span class="c1"># Import the module</span>
+<span class="kn">from</span> <span class="nn">manifold_mixup</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="c1"># Create the model</span>
+<span class="n">learn_with_Mmixup</span> <span class="o">=</span> <span class="n">Learner</span><span class="p">(</span><span class="n">dls</span><span class="p">,</span> <span class="n">resnet18</span><span class="p">(),</span> <span class="n">metrics</span><span class="o">=</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">cbs</span><span class="o">=</span><span class="n">ManifoldMixup</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
+<span class="c1"># Train the model</span>
+<span class="n">learn_with_Mmixup</span><span class="o">.</span><span class="n">fit_one_cycle</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="3.-Cutmix">
+<a class="anchor" href="#3.-Cutmix" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. Cutmix<a class="anchor-link" href="#3.-Cutmix"> </a>
+</h2>
+<p>Finally the most recent of the three, which again follows the same procedure as MixUp (is applied to input only) but instead of <em>mixing</em> the random samples, we cut a portion of one sample and patch it into the other, this will be your independent variable.</p>
+<p>Now for your dependent variable, you take the propotion of each sample appearing in the new one created.</p>
+<p>Here's an image from the paper that will help you understand.</p>
+<p><img src="/blog/images/copied_from_nb/../images/cutmix_image_example.jpg" alt="Description of CutMix. Image from the original paper"></p>
+<blockquote>
+<p>The related paper:<a href="https://arxiv.org/abs/1905.04899">CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features</a></p>
+</blockquote>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To implement it in fastai2, we'll use the code provided by them to create the Callback.</p>
+<p>Here's the link to the original documentation : <a href="https://docs.fast.ai/callback.cutmix">CutMix Callback</a>.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">torch.distributions.beta</span> <span class="kn">import</span> <span class="n">Beta</span>
+<span class="k">class</span> <span class="nc">CutMix</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="s2">"Implementation of `https://arxiv.org/abs/1905.04899`"</span>
+    <span class="n">run_after</span><span class="p">,</span><span class="n">run_valid</span> <span class="o">=</span> <span class="p">[</span><span class="n">Normalize</span><span class="p">],</span><span class="kc">False</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">distrib</span> <span class="o">=</span> <span class="n">Beta</span><span class="p">(</span><span class="n">tensor</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="n">tensor</span><span class="p">(</span><span class="n">alpha</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">before_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack_y</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">loss_func</span><span class="p">,</span> <span class="s1">'y_int'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_y</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_lf</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">loss_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">loss_func</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">lf</span>
+
+    <span class="k">def</span> <span class="nf">after_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_y</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">loss_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_lf</span>
+
+    <span class="k">def</span> <span class="nf">before_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">W</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xb</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">xb</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">lam</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distrib</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">lam</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">lam</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">lam</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lam</span> <span class="o">=</span> <span class="n">lam</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">shuffle</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">xb1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">yb1</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">L</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xb</span><span class="p">)</span><span class="o">.</span><span class="n">itemgot</span><span class="p">(</span><span class="n">shuffle</span><span class="p">)),</span><span class="nb">tuple</span><span class="p">(</span><span class="n">L</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yb</span><span class="p">)</span><span class="o">.</span><span class="n">itemgot</span><span class="p">(</span><span class="n">shuffle</span><span class="p">))</span>
+        <span class="n">nx_dims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_bbox</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lam</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">xb</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="p">:,</span> <span class="n">x1</span><span class="p">:</span><span class="n">x2</span><span class="p">,</span> <span class="n">y1</span><span class="p">:</span><span class="n">y2</span><span class="p">]</span> <span class="o">=</span> <span class="n">xb1</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="p">:,</span> <span class="n">x1</span><span class="p">:</span><span class="n">x2</span><span class="p">,</span> <span class="n">y1</span><span class="p">:</span><span class="n">y2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lam</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">((</span><span class="n">x2</span><span class="o">-</span><span class="n">x1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">y2</span><span class="o">-</span><span class="n">y1</span><span class="p">))</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">W</span><span class="o">*</span><span class="n">H</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_y</span><span class="p">:</span>
+            <span class="n">ny_dims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">learn</span><span class="o">.</span><span class="n">yb</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">L</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yb1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">yb</span><span class="p">)</span><span class="o">.</span><span class="n">map_zip</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">lerp</span><span class="p">,</span><span class="n">weight</span><span class="o">=</span><span class="n">unsqueeze</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lam</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">ny_dims</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">lf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">,</span> <span class="o">*</span><span class="n">yb</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_lf</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="o">*</span><span class="n">yb</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">NoneReduce</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_lf</span><span class="p">)</span> <span class="k">as</span> <span class="n">lf</span><span class="p">:</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">lerp</span><span class="p">(</span><span class="n">lf</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">yb1</span><span class="p">),</span> <span class="n">lf</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span><span class="o">*</span><span class="n">yb</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lam</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reduce_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_lf</span><span class="p">,</span> <span class="s1">'reduction'</span><span class="p">,</span> <span class="s1">'mean'</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">rand_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">lam</span><span class="p">):</span>
+        <span class="n">cut_rat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span>
+        <span class="n">cut_w</span> <span class="o">=</span> <span class="p">(</span><span class="n">W</span> <span class="o">*</span> <span class="n">cut_rat</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+        <span class="n">cut_h</span> <span class="o">=</span> <span class="p">(</span><span class="n">H</span> <span class="o">*</span> <span class="n">cut_rat</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+        <span class="c1"># uniform</span>
+        <span class="n">cx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">cy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">cx</span> <span class="o">-</span> <span class="n">cut_w</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">cy</span> <span class="o">-</span> <span class="n">cut_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">cx</span> <span class="o">+</span> <span class="n">cut_w</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+        <span class="n">y2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">cy</span> <span class="o">+</span> <span class="n">cut_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create the model</span>
+<span class="n">learn_cut_mix</span> <span class="o">=</span> <span class="n">Learner</span><span class="p">(</span><span class="n">dls</span><span class="p">,</span> <span class="n">resnet18</span><span class="p">(),</span> <span class="n">metrics</span><span class="o">=</span><span class="n">accuracy</span><span class="p">,</span> <span class="n">cbs</span><span class="o">=</span><span class="n">CutMix</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span>
+<span class="c1"># Train the model</span>
+<span class="n">learn_cut_mix</span><span class="o">.</span><span class="n">fit_one_cycle</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+</div>
+
+
+
+  </div><a class="u-url" href="/blog/2020/11/18/mixup_manifold_mixup_cutmix.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Graduate student in computer science, blog about my learning journey (AI/ Deep learning/ Machine learning/ Computer vision).</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/igrek-code" title="igrek-code"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
